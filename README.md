@@ -1,56 +1,52 @@
 # Radvinex AI Product Image Processor
 
-Batch-process product photography using three background-removal AI models, add a brand logo, and export standardized WebP images for e-commerce.
+AI-assisted batch processing for e-commerce product photography: remove backgrounds, enhance low-resolution images, and produce consistent **600 × 600 transparent PNGs** with a subtle Radvinex logo watermark.
+
+## Before & After
+
+| Original input | Processed output |
+|:---:|:---:|
+| ![Original mechanical part](products/Mechanical-Parts.webp) | ![Processed mechanical part](output/Mechanical-Parts.png) |
+| `products/Mechanical-Parts.webp` | `output/Mechanical-Parts.png` |
+
+> The preview images above are sample files committed to this repository. Results vary by source image.
 
 ## Features
 
-- Background removal using **BiRefNet General**, **BiRefNet Massive**, and **ISNet General Use** via `rembg`.
-- Mask combination and recovery steps designed to preserve fine product details.
-- Batch processing of JPG, JPEG, PNG, WEBP, BMP, TIFF, and TIF inputs.
-- Consistent **600 × 600 px** output canvas, with a product region and bottom-left logo.
-- WebP compression that targets **95 KiB or less**; if necessary the script reduces effective detail while preserving output dimensions. Files that cannot meet the limit raise an error.
-- Optional saved diagnostic masks.
+- Combines three background-removal models through `rembg`: **BiRefNet General**, **BiRefNet Massive**, and **ISNet General Use**.
+- Attempts to preserve small product details when merging AI masks.
+- Accepts JPG, JPEG, PNG, WebP, BMP, TIF and TIFF inputs.
+- Exports **600 × 600 px transparent PNGs**, retaining a **20 px** maximum product margin.
+- Places a full-canvas logo watermark behind the product at **10% opacity** (transparent areas of the logo stay transparent).
+- Attempts **Real-ESRGAN ×4** restoration on low-resolution images; uses Pillow enhancement as a fallback if restoration is unavailable.
+- Processes multiple input images automatically.
 
-## Setup
+## Requirements
 
-**Python 3.11** is a practical starting point. The script is designed for local use and may need substantial memory, disk space, and time when loading its three models.
+- Python and a working internet connection for initial dependency and AI model downloads.
+- Sufficient disk space and RAM for AI models. GPU acceleration is optional; CPU processing may be slow.
 
-```bash
-python -m venv .venv
-```
+Dependencies can be installed explicitly:
 
-Activate the environment:
-
-Windows PowerShell:
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-macOS / Linux:
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies:
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-> Note: The exact dependency versions and model-loading behavior have not been runtime-tested for this release. `rembg` downloads AI model weights when needed, so the initial run requires network access. Some environments may require additional model-specific dependencies or a compatible inference provider.
+The script also attempts to install missing dependencies on startup. AI packages and model weights can be large. Compatibility and full inference have **not** been validated on every Python/OS configuration.
 
 ## Usage
 
-1. Place source product images in `products/`.
-2. Keep your logo at `logo.png`, or replace it with your own PNG logo.
-3. Run:
+1. Put source images in `products/`.
+2. Keep `logo.png` alongside `main.py`, or replace it with your own authorized logo.
+3. Run the program from the project directory:
 
 ```bash
 python main.py
 ```
 
-4. Find the resulting `.webp` images in `output/`.
+4. Find processed images in `output/`, with matching basenames and a `.png` extension.
 
-### Project layout
+## Project structure
 
 ```text
 radvinex-ai-product-image-processor/
@@ -59,22 +55,47 @@ radvinex-ai-product-image-processor/
 ├── requirements.txt
 ├── README.md
 ├── .gitignore
-├── products/          # input images (not committed)
-└── output/            # generated images (not committed)
+├── products/
+│   └── Mechanical-Parts.webp     # sample input
+└── output/
+    └── Mechanical-Parts.png      # sample output
 ```
 
-## Customization
+Other product photos and generated images can be kept local. The `.gitkeep` files allow directories to remain represented in Git.
 
-Edit constants near the top of `main.py` to adjust the image dimensions, product position, logo position, model names, compression target, or debugging options. `SAVE_DEBUG_MASKS = True` writes masks to `debug-masks/`.
+## Configuration
 
-## Important notes
+Edit the constants at the top of `main.py`, including:
 
-- The code is for local batch processing; it is **not** a Photoshop plugin.
-- A white RGB canvas is used for the final WebP image; generated images are **not transparent**.
-- Runtime performance and output quality vary with the product images and AI model availability.
-- A logo is included to reproduce the supplied setup; replace it when using the project for another brand. Permission to redistribute the logo and the preferred software license should be confirmed before public publication.
-- No open-source license has been assigned yet. Choose a license (for example, MIT) before inviting reuse or modification.
+- `CANVAS_SIZE = (600, 600)`
+- `PRODUCT_PADDING = 20`
+- `LOGO_OPACITY = 0.10`
+- `AI_SUPER_RESOLUTION = True`
+- `SAVE_DEBUG_MASKS = False`
 
-## فارسی
+**Note:** AI restoration can reconstruct or alter tiny text and fine mechanical details. Check processed images before publishing them as technical product references.
 
-این پروژه برای آماده‌سازی گروهی تصاویر محصولات فروشگاهی است: حذف پس‌زمینه با سه مدل هوش مصنوعی، حفظ لبه‌های محصول، قرار دادن لوگو و خروجی WebP در ابعاد ۶۰۰ در ۶۰۰ پیکسل. تصاویر ورودی را در پوشه `products` قرار دهید و با `python main.py` اجرا کنید. خروجی در پوشه `output` ذخیره می‌شود.
+## License & brand assets
+
+No open-source license has been assigned to this repository. Public visibility alone does not grant permission to reuse the code or the Radvinex logo. If you want to encourage reuse, add a deliberate software license and clarify the rights for brand assets.
+
+---
+
+## راهنمای فارسی
+
+**Radvinex AI Product Image Processor** ابزاری برای آماده‌سازی گروهی تصاویر محصولات فروشگاهی و صنعتی است.
+
+- حذف پس‌زمینه با ترکیب سه مدل هوش مصنوعی
+- تلاش برای بازسازی عکس‌های کم‌کیفیت با Real-ESRGAN
+- تولید PNG شفاف با ابعاد ۶۰۰ در ۶۰۰ پیکسل
+- حاشیه محصول ۲۰ پیکسل و واترمارک لوگو با شفافیت ۱۰ درصد
+- دریافت فایل‌ها از پوشه `products` و ذخیره خروجی در `output`
+
+برای اجرا:
+
+```bash
+python -m pip install -r requirements.txt
+python main.py
+```
+
+تصاویر نمونه قبل و بعد در ابتدای همین صفحه نمایش داده شده‌اند. اجرای کامل مدل‌های هوش مصنوعی در همه محیط‌ها تضمین نشده و ممکن است در اجرای اول به اینترنت و منابع سخت‌افزاری بیشتری نیاز باشد.
